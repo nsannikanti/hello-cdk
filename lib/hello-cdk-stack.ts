@@ -84,7 +84,7 @@ export class HelloCdkStack extends cdk.Stack {
        vpc,
        instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.MICRO),
        machineImage: ec2.MachineImage.genericLinux({
-         'us-east-1': 'ami-04c0f9ef2f505b609',
+         'us-east-1': 'ami-0de2b0b74893c74ee',
        })
      });
  
