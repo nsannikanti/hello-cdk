@@ -58,34 +58,36 @@ export class HelloCdkStack extends cdk.Stack {
     });
 
     // 👇 create the EC2 Instance
-    const ec2Instance = new ec2.Instance(this, 'ec2-instance', {
-      vpc,
-      vpcSubnets: {
-        subnetType: ec2.SubnetType.PUBLIC,
-      },
-      role: webserverRole,
-      securityGroup: webserverSG,
-      instanceType: ec2.InstanceType.of(
-        ec2.InstanceClass.BURSTABLE2,
-        ec2.InstanceSize.MICRO,
-      ),
-      machineImage: new ec2.AmazonLinuxImage({
-        generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
-      }),
-      keyName: 'nareshlinux',
-    });
+    // const ec2Instance = new ec2.Instance(this, 'ec2-instance', {
+    //   vpc,
+    //   vpcSubnets: {
+    //     subnetType: ec2.SubnetType.PUBLIC,
+    //   },
+    //   role: webserverRole,
+    //   securityGroup: webserverSG,
+    //   instanceType: ec2.InstanceType.of(
+    //     ec2.InstanceClass.BURSTABLE2,
+    //     ec2.InstanceSize.MICRO,
+    //   ),
+    //   machineImage: new ec2.AmazonLinuxImage({
+    //     generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
+    //   }),
+    //   keyName: 'nareshlinux',
+    // });
 
-     // 👇 load contents of script
-     const userDataScript = readFileSync('./lib/user-data.sh', 'utf8');
-     // 👇 add the User Data script to the Instance
-     ec2Instance.addUserData(userDataScript);
+    //  // 👇 load contents of script
+    //  const userDataScript = readFileSync('./lib/user-data.sh', 'utf8');
+    //  // 👇 add the User Data script to the Instance
+    //  ec2Instance.addUserData(userDataScript);
  
      const asg = new autoscaling.AutoScalingGroup(this, 'ASG', {
        vpc,
        instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.MICRO),
        machineImage: ec2.MachineImage.genericLinux({
          'us-east-1': 'ami-0de2b0b74893c74ee',
-       })
+       }),
+       keyName: 'nareshlinux',
+       minCapacity: 2
      });
  
      const lb = new elb.LoadBalancer(this, 'LB', {
