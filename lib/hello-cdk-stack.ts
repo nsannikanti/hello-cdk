@@ -70,7 +70,7 @@ export class HelloCdkStack extends cdk.Stack {
       machineImage: new ec2.AmazonLinuxImage({
         generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
       }),
-      keyName: 'virginia',
+      keyName: 'nareshlinux',
     });
 
     // 👇 load contents of script
