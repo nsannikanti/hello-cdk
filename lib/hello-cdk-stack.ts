@@ -4,6 +4,7 @@ import { aws_ec2 as ec2 } from 'aws-cdk-lib';
 import { aws_iam as iam } from 'aws-cdk-lib';
 import { aws_elasticloadbalancing as elb } from 'aws-cdk-lib';
 import { aws_autoscaling as autoscaling } from 'aws-cdk-lib';
+import { Size as size } from 'aws-cdk-lib';
 
 import {readFileSync} from 'fs';
 
@@ -12,9 +13,9 @@ export class HelloCdkStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    new s3.Bucket(this, 'MyFirstBucketdchgdcghfcd1r610120241240', {
-      versioned: true
-    });
+    // new s3.Bucket(this, 'MyFirstBucketdchgdcghfcd1r610120241240', {
+    //   versioned: true
+    // });
 
     // 👇 create VPC in which we'll launch the Instance
     const vpc = new ec2.Vpc(this, 'my-cdk-vpc', {
@@ -58,47 +59,57 @@ export class HelloCdkStack extends cdk.Stack {
     });
 
     // 👇 create the EC2 Instance
-    // const ec2Instance = new ec2.Instance(this, 'ec2-instance', {
-    //   vpc,
-    //   vpcSubnets: {
-    //     subnetType: ec2.SubnetType.PUBLIC,
-    //   },
-    //   role: webserverRole,
-    //   securityGroup: webserverSG,
-    //   instanceType: ec2.InstanceType.of(
-    //     ec2.InstanceClass.BURSTABLE2,
-    //     ec2.InstanceSize.MICRO,
-    //   ),
-    //   machineImage: new ec2.AmazonLinuxImage({
-    //     generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
-    //   }),
-    //   keyName: 'nareshlinux',
-    // });
+    const ec2Instance = new ec2.Instance(this, 'ec2-instance', {
+      vpc,
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PUBLIC,
+      },
+      role: webserverRole,
+      securityGroup: webserverSG,
+      instanceType: ec2.InstanceType.of(
+        ec2.InstanceClass.BURSTABLE2,
+        ec2.InstanceSize.MICRO,
+      ),
+      machineImage: new ec2.AmazonLinuxImage({
+        generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
+      }),
+      keyName: 'nareshlinux',
+    });
 
-    //  // 👇 load contents of script
-    //  const userDataScript = readFileSync('./lib/user-data.sh', 'utf8');
-    //  // 👇 add the User Data script to the Instance
-    //  ec2Instance.addUserData(userDataScript);
+     // 👇 load contents of script
+     const userDataScript = readFileSync('./lib/user-data.sh', 'utf8');
+     // 👇 add the User Data script to the Instance
+     ec2Instance.addUserData(userDataScript);
  
-     const asg = new autoscaling.AutoScalingGroup(this, 'ASG', {
-       vpc,
-       instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.MICRO),
-       machineImage: ec2.MachineImage.genericLinux({
-         'us-east-1': 'ami-0de2b0b74893c74ee',
-       }),
-       keyName: 'nareshlinux',
-       minCapacity: 2
-     });
+     // 👇 create the EBS Volume 
+     const volume = new ec2.Volume(this, 'Volume', {
+      availabilityZone: 'us-east-1b',
+      size: size.gibibytes(1),
+      encrypted: true,
+    });
+
+    volume.grantAttachVolume(webserverRole, [ec2Instance]);
+
+
+    //  const asg = new autoscaling.AutoScalingGroup(this, 'ASG', {
+    //    vpc,
+    //    instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.MICRO),
+    //    machineImage: ec2.MachineImage.genericLinux({
+    //      'us-east-1': 'ami-0de2b0b74893c74ee',
+    //    }),
+    //    keyName: 'nareshlinux',
+    //    minCapacity: 2
+    //  });
  
-     const lb = new elb.LoadBalancer(this, 'LB', {
-       vpc,
-       internetFacing: true,
-       healthCheck: {
-         port: 80
-       },
-     });
-     lb.addTarget(asg);
-     const listener = lb.addListener({ externalPort: 80 });
-     listener.connections.allowDefaultPortFromAnyIpv4('Open to the world');
+    //  const lb = new elb.LoadBalancer(this, 'LB', {
+    //    vpc,
+    //    internetFacing: true,
+    //    healthCheck: {
+    //      port: 80
+    //    },
+    //  });
+    //  lb.addTarget(asg);
+    //  const listener = lb.addListener({ externalPort: 80 });
+    //  listener.connections.allowDefaultPortFromAnyIpv4('Open to the world');
    }
  }
