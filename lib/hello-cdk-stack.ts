@@ -64,7 +64,7 @@ export class HelloCdkStack extends cdk.Stack {
       vpcSubnets: {
         subnetType: ec2.SubnetType.PUBLIC,
       },
-      role: webserverRole,
+      // role: webserverRole,
       securityGroup: webserverSG,
       instanceType: ec2.InstanceType.of(
         ec2.InstanceClass.BURSTABLE2,
