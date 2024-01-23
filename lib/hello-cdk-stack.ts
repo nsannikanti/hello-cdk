@@ -97,15 +97,15 @@ export class HelloCdkStack extends cdk.Stack {
       'echo "/dev/xvdf /data ext4 defaults 0 0" >> /etc/fstab' // Make the mount permanent
     );
 
-    //  const asg = new autoscaling.AutoScalingGroup(this, 'ASG', {
-    //    vpc,
-    //    instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.MICRO),
-    //    machineImage: ec2.MachineImage.genericLinux({
-    //      'us-east-1': 'ami-0de2b0b74893c74ee',
-    //    }),
-    //    keyName: 'nareshlinux',
-    //    minCapacity: 2
-    //  });
+     const asg = new autoscaling.AutoScalingGroup(this, 'ASG', {
+       vpc,
+       instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.MICRO),
+       machineImage: ec2.MachineImage.genericLinux({
+         'us-east-1': 'ami-0de2b0b74893c74ee',
+       }),
+       keyName: 'nareshlinux',
+       minCapacity: 2
+     });
  
      const lb = new elb.LoadBalancer(this, 'LB', {
        vpc,
@@ -114,7 +114,7 @@ export class HelloCdkStack extends cdk.Stack {
          port: 80
        },
      });
-     // lb.addTarget(asg);
+     lb.addTarget(asg);
      const listener = lb.addListener({ externalPort: 80 });
      listener.connections.allowDefaultPortFromAnyIpv4('Open to the world');
    }
