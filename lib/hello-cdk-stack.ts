@@ -107,15 +107,15 @@ export class HelloCdkStack extends cdk.Stack {
     //    minCapacity: 2
     //  });
  
-    //  const lb = new elb.LoadBalancer(this, 'LB', {
-    //    vpc,
-    //    internetFacing: true,
-    //    healthCheck: {
-    //      port: 80
-    //    },
-    //  });
-    //  lb.addTarget(asg);
-    //  const listener = lb.addListener({ externalPort: 80 });
-    //  listener.connections.allowDefaultPortFromAnyIpv4('Open to the world');
+     const lb = new elb.LoadBalancer(this, 'LB', {
+       vpc,
+       internetFacing: true,
+       healthCheck: {
+         port: 80
+       },
+     });
+     // lb.addTarget(asg);
+     const listener = lb.addListener({ externalPort: 80 });
+     listener.connections.allowDefaultPortFromAnyIpv4('Open to the world');
    }
  }
