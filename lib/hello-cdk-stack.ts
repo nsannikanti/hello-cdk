@@ -1,52 +1,45 @@
-import * as s3 from 'aws-cdk-lib/aws-s3';
-import * as cdk from 'aws-cdk-lib';
+import { CodePipeline, CodePipelineSource, ShellStep } from 'aws-cdk-lib/pipelines';
+import { Construct } from 'constructs';
+import {  Stack, StackProps } from 'aws-cdk-lib';
 
-export class HelloCdkStack extends cdk.Stack {
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+import { CdkEBStage } from './eb-stage';
+
+/**
+ * The stack that defines the application pipeline
+ */
+export class HelloCdkStack extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const s3Bucket = new s3.Bucket(this, 's3-bucket', {
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-      // 👇 set up lifecycle rules
-      lifecycleRules: [
-        {
-          // 👇 optionally only apply rules to objects where the prefix matches
-          // prefix: 'data/',
-          abortIncompleteMultipartUploadAfter: cdk.Duration.days(90),
-          expiration: cdk.Duration.days(365),
-          transitions: [
-            {
-              storageClass: s3.StorageClass.INFREQUENT_ACCESS,
-              transitionAfter: cdk.Duration.days(30),
-            },
-            {
-              storageClass: s3.StorageClass.INTELLIGENT_TIERING,
-              transitionAfter: cdk.Duration.days(60),
-            },
-            {
-              storageClass: s3.StorageClass.GLACIER,
-              transitionAfter: cdk.Duration.days(90),
-            },
-            {
-              storageClass: s3.StorageClass.DEEP_ARCHIVE,
-              transitionAfter: cdk.Duration.days(180),
-            },
-          ],
-        },
-      ],
+    const pipeline = new CodePipeline(this, 'Pipeline', {
+      // The pipeline name
+      pipelineName: 'MyServicePipeline',
+
+       // How it will be built and synthesized
+       synth: new ShellStep('Synth', {
+         // Where the source can be found
+         input: CodePipelineSource.gitHub('OWNER/REPO', 'main'),
+         
+         // Install dependencies, build and run cdk synth
+         installCommands: ['npm i -g npm@latest'],
+         commands: [
+           'npm ci',
+           'npm run build',
+           'npx cdk synth'
+         ],
+       }),
     });
 
-    // 👇 add a life cycle rule after bucket creation
-    s3Bucket.addLifecycleRule({
-      prefix: 'logs/',
-      expiration: cdk.Duration.days(90),
-      transitions: [
-        {
-          storageClass: s3.StorageClass.ONE_ZONE_INFREQUENT_ACCESS,
-          transitionAfter: cdk.Duration.days(60),
-        },
-      ],
-    });
+    // This is where we add the application stages
+    // For environment with default values 
+    // const deploy = new CdkEBStage(this, 'Pre-Prod');
+
+    // For environment with custom AutoScaling group configuration
+    const deploy = new CdkEBStage(this, 'Pre-Prod', { 
+      minSize : "1",
+      maxSize : "1"
+  });
+    const deployStage = pipeline.addStage(deploy); 
+    
   }
 }
