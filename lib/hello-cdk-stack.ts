@@ -1,14 +1,10 @@
+// import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as cdk from 'aws-cdk-lib';
 import { CodePipeline, CodePipelineSource, ShellStep } from 'aws-cdk-lib/pipelines';
-import { Construct } from 'constructs';
-import {  Stack, StackProps } from 'aws-cdk-lib';
-
 import { CdkEBStage } from './eb-stage';
 
-/**
- * The stack that defines the application pipeline
- */
-export class HelloCdkStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+export class HelloCdkStack extends cdk.Stack {
+  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     const pipeline = new CodePipeline(this, 'Pipeline', {
@@ -40,6 +36,5 @@ export class HelloCdkStack extends Stack {
       maxSize : "1"
   });
     const deployStage = pipeline.addStage(deploy); 
-    
   }
 }
