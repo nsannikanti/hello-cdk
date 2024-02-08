@@ -6,6 +6,7 @@ import { CdkEBStage } from './eb-stage';
 export class HelloCdkStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+    
 
     const pipeline = new CodePipeline(this, 'Pipeline', {
       // The pipeline name
